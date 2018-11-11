@@ -42,7 +42,7 @@
     #inst "2000-02-22T00:00:00" "02/22/2000"
     #inst "3000-03-03T00:00:00" "03/03/3000"
 
-    ;; Invalid unfroms should return invalid keywords?
+    ;; Invalid unforms should return invalid keywords?
     0    :clojure.spec.alpha/invalid
     5.0  :clojure.spec.alpha/invalid
     :foo :clojure.spec.alpha/invalid))
