@@ -1,14 +1,36 @@
 (ns com.example.csv-service.data
   (:refer-clojure :exclude [read])
   (:require [clojure.spec.alpha :as spec]
-            [clojure.java.io :as io]))
+            [clojure.spec.gen.alpha :as gen]
+            [clojure.java.io :as io])
+  (:import [java.text SimpleDateFormat]
+           [java.util TimeZone]))
+
+(def date-format
+  (doto (SimpleDateFormat. "MM/dd/yyyy")
+    (.setTimeZone (TimeZone/getTimeZone "UTC"))))
+
+(defn parse-date
+  [s]
+  (.parse date-format s))
+
+(defn unparse-date
+  [d]
+  (.format date-format d))
+
+(spec/def ::date-of-birth
+  (spec/with-gen
+    (spec/and
+     string?
+     (spec/conformer parse-date unparse-date))
+    #(gen/fmap unparse-date (spec/gen inst?))))
 
 (spec/def ::record
   (spec/cat :last-name string?
             :first-name string?
             :gender string?
             :favorite-color string?
-            :date-of-birth string?))
+            :date-of-birth ::date-of-birth))
 
 (spec/def ::header
   #{["LastName" "FirstName" "Gender"
