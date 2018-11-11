@@ -2,7 +2,7 @@
   (:refer-clojure :exclude [read])
   (:require [clojure.spec.alpha :as spec]
             [clojure.spec.gen.alpha :as gen]
-            [clojure.java.io :as io])
+            [clojure.string :refer [split]])
   (:import [java.text SimpleDateFormat]
            [java.util TimeZone]))
 
@@ -32,12 +32,9 @@
     (spec/with-gen (spec/and string? cf)
       #(gen/fmap unparse-date (spec/gen inst?)))))
 
-#_(spec/def ::date-of-birth
-  (spec/with-gen
-    (spec/and
-     string?
-     (spec/conformer parse-date unparse-date))
-    #(gen/fmap unparse-date (spec/gen inst?))))
+(spec/def ::header
+  #{["LastName" "FirstName" "Gender"
+     "FavoriteColor" "DateOfBirth"]})
 
 (spec/def ::record
   (spec/cat :last-name string?
@@ -46,25 +43,16 @@
             :favorite-color string?
             :date-of-birth ::date))
 
-(spec/def ::header
-  #{["LastName" "FirstName" "Gender"
-     "FavoriteColor" "DateOfBirth"]})
-
 (spec/def ::csv-data
   (spec/cat :header ::header
             :data (spec/* (spec/spec ::record))))
 
-(defn parse-record
-  [rec]
-  (spec/conform ::record rec))
-
-(defn parse [data]
-  (spec/assert (first data) ::header)
-  (->> (drop 1 data)
-       (map parse-record)))
-
 (defn read [rdr sep]
-  (->> (line-seq rdr)
-       (map #(clojure.string/split % sep))
-       (parse)))
+  (let [lines (->> (line-seq rdr)
+                   (map #(split % sep)))]
+    (if-not (spec/valid? ::csv-data lines)
+      (let [s (spec/explain-str ::csv-data lines)
+            d (spec/explain-data ::csv-data lines)]
+        (throw (ex-info s d))))
+    (spec/conform ::csv-data lines)))
 
