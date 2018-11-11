@@ -8,17 +8,31 @@
 
 (def date-format
   (doto (SimpleDateFormat. "MM/dd/yyyy")
-    (.setTimeZone (TimeZone/getTimeZone "UTC"))))
+    (.setTimeZone (TimeZone/getTimeZone "UTC"))
+    (.setLenient false)))
 
 (defn parse-date
   [s]
-  (.parse date-format s))
+  (try
+    (.parse date-format s)
+    (catch Exception _
+      :clojure.spec.alpha/invalid)))
 
 (defn unparse-date
   [d]
-  (.format date-format d))
+  (try
+    (if-not (inst? d)
+      (throw (ex-info "Not a date!")))
+    (.format date-format d)
+    (catch Exception _
+      :clojure.spec.alpha/invalid)))
 
-(spec/def ::date-of-birth
+(spec/def ::date
+  (let [cf (spec/conformer parse-date unparse-date)]
+    (spec/with-gen (spec/and string? cf)
+      #(gen/fmap unparse-date (spec/gen inst?)))))
+
+#_(spec/def ::date-of-birth
   (spec/with-gen
     (spec/and
      string?
@@ -30,7 +44,7 @@
             :first-name string?
             :gender string?
             :favorite-color string?
-            :date-of-birth ::date-of-birth))
+            :date-of-birth ::date))
 
 (spec/def ::header
   #{["LastName" "FirstName" "Gender"
