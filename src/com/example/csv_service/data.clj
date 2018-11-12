@@ -2,7 +2,7 @@
   (:refer-clojure :exclude [read])
   (:require [clojure.spec.alpha :as spec]
             [clojure.spec.gen.alpha :as gen]
-            [clojure.string :refer [split]])
+            [clojure.string :refer [split join includes?]])
   (:import [java.text SimpleDateFormat]
            [java.util TimeZone]))
 
@@ -31,11 +31,23 @@
   #{["LastName" "FirstName" "Gender"
      "FavoriteColor" "DateOfBirth"]})
 
+(def ^:dynamic *separators*
+  #{" | ", ", ", " "})
+
+(defn includes-separators?
+  [s]
+  (->> *separators*
+       (some (partial includes? s))
+       (boolean)))
+
+(spec/def ::string
+  (spec/and string? (complement includes-separators?)))
+
 (spec/def ::record
-  (spec/cat :last-name string?
-            :first-name string?
-            :gender string?
-            :favorite-color string?
+  (spec/cat :last-name ::string
+            :first-name ::string
+            :gender ::string
+            :favorite-color ::string
             :date-of-birth ::date))
 
 (spec/def ::csv-data

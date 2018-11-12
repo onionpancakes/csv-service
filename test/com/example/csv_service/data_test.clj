@@ -41,3 +41,39 @@
     #inst "1900-01-01T00:00:00" "01/01/1900"
     #inst "2000-02-22T00:00:00" "02/22/2000"
     #inst "3000-03-03T00:00:00" "03/03/3000"))
+
+(deftest test-includes-separators?
+  (are [x y] (= (data/includes-separators? x) y)
+    " "         true
+    ", "        true
+    " | "       true
+    "foo bar"   true
+    "foo, bar"  true
+    "foo | bar" true
+    " foo"      true
+    ""          false
+    "foo"       false
+    "foo,bar"   false
+    "foo|bar"   false))
+
+(deftest test-includes-separators?-binding
+  (are [x y] (binding [data/*separators* ["," "."]]
+               (= (data/includes-separators? x) y))
+    "."         true
+    ","         true
+    "foo,bar"   true
+    "foo.bar"   true
+    "foo"       false
+    ""          false
+    "foo | bar" false))
+
+(deftest test-string-spec
+  (are [x y] (= (spec/valid? ::data/string x) y)
+    "foo"       true
+    ""          true
+    "foo,bar"   true
+    "foo.bar"   true
+    "foo bar"   false
+    "foo, bar"  false
+    "foo | bar" false))
+
