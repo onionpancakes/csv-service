@@ -20,12 +20,7 @@
 
 (defn unparse-date
   [d]
-  (try
-    (if-not (inst? d)
-      (throw (ex-info "Not a date!")))
-    (.format date-format d)
-    (catch Exception _
-      :clojure.spec.alpha/invalid)))
+  (.format date-format d))
 
 (spec/def ::date
   (let [cf (spec/conformer parse-date unparse-date)]
