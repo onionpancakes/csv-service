@@ -37,53 +37,64 @@
   (spec/cat :header ::data.spec/header
             :data (spec/* (spec/spec ::record))))
 
-(defn read [rdr sep]
-  (let [lines (->> (line-seq rdr)
-                   (map #(split % sep)))]
-    (if-not (spec/valid? ::csv-data lines)
-      (let [s (spec/explain-str ::csv-data lines)
-            d (spec/explain-data ::csv-data lines)]
-        (throw (ex-info s d))))
-    (spec/conform ::csv-data lines)))
-
-(defn write [wtr sep data]
-  (doseq [line (spec/unform ::csv-data data)]
-    (doto wtr
-      (.write (join sep line))
-      (.newLine))))
-
 (defn merge-data [base & others]
   (->> (mapcat :data others)
        (update base :data into)))
 
-(def gender-order
-  {"female" 0
-   "Female" 1
-   "male"   2
-   "Male"   3})
+(defn from-lines [sep lines]
+  (->> (map #(split % sep) lines)
+       (spec/conform ::csv-data)))
 
-(defn -main []
-  (.mkdir (io/file "./out"))
+(defn to-lines [sep data]
+  (->> (spec/unform ::csv-data data)
+       (map #(join sep %))))
+
+;; Solution
+
+(defn input-data []
   (with-open [r1 (io/reader "data/random_pipes.csv")
               r2 (io/reader "data/random_comma.csv")
-              r3 (io/reader "data/random_space.csv")
-              w1 (io/writer "out/random_gender_last.csv")
+              r3 (io/reader "data/random_space.csv")]
+    (let [d1 (from-lines #" \| " (line-seq r1))
+          d2 (from-lines #", " (line-seq r2))
+          d3 (from-lines #" " (line-seq r3))]
+      (merge-data d1 d2 d3))))
+
+(defn write-lines [wtr lines]
+  (doseq [line lines]
+    (doto wtr
+      (.write line)
+      (.newLine))))
+
+(defn solution-fn1 [data]
+  (let [gord   {"Female" 0 "Male" 1}
+        key-fn (juxt (comp gord :gender) :last-name)]
+    (update data :data (partial sort-by key-fn))))
+
+(defn solution-fn2 [data]
+  (update data :data (partial sort-by :date-of-birth)))
+
+(defn solution-fn3 [data]
+  (update data :data (comp reverse (partial sort-by :last-name))))
+
+(defn output-data [data]
+  (with-open [w1 (io/writer "out/random_gender_last.csv")
               w2 (io/writer "out/random_dob.csv")
               w3 (io/writer "out/random_last.csv")]
-    (let [m (merge-data (read r1 #" \| ")
-                        (read r2 #", ")
-                        (read r3 #" "))]
-      (->> (partial sort-by (juxt (comp gender-order
-                                        lower-case
-                                        :gender)
-                                  :last-name))
-           (update m :data)
-           (write w1 ","))
-      (->> (partial sort-by :date-of-birth)
-           (update m :data)
-           (write w2 ","))
-      (->> (partial sort-by :last-name)
-           (comp reverse)
-           (update m :data)
-           (write w3 ",")))))
+    (->> (solution-fn1 data)
+         (to-lines ",")
+         (write-lines w1))
+    (->> (solution-fn2 data)
+         (to-lines ",")
+         (write-lines w2))
+    (->> (solution-fn3 data)
+         (to-lines ",")
+         (write-lines w3))))
+
+(defn solution []
+  (.mkdir (io/file "./out"))
+  (output-data (input-data)))
+
+(defn -main []
+  (solution))
 

@@ -18,9 +18,15 @@
   (with-open [w1 (io/writer "data/random_pipes.csv")
               w2 (io/writer "data/random_comma.csv")
               w3 (io/writer "data/random_space.csv")]
-    (data/write w1 " | " (gen-data))
-    (data/write w2 ", " (gen-data))
-    (data/write w3 " " (gen-data))))
+    (->> (gen-data)
+         (data/to-lines " | ")
+         (data/write-lines w1))
+    (->> (gen-data)
+         (data/to-lines ", ")
+         (data/write-lines w2))
+    (->> (gen-data)
+         (data/to-lines " ")
+         (data/write-lines w3))))
 
 (comment
   (with-open [rdr (io/reader "data/sample_pipes.csv")]
