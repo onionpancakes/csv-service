@@ -39,6 +39,9 @@
 (def header
   ["LastName" "FirstName" "Gender" "FavoriteColor" "DateOfBirth"])
 
+(def genders
+  #{"Female" "Male"})
+
 (spec/def ::header
   #{header})
 
@@ -46,8 +49,7 @@
 
 (spec/def ::first-name ::string)
 
-(spec/def ::gender
-  #{"Female" "Male" "female" "male"})
+(spec/def ::gender genders)
 
 (spec/def ::favorite-color ::string)
 
