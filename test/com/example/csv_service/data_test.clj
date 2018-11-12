@@ -2,7 +2,8 @@
   (:require [clojure.test :refer [deftest is are]]
             [clojure.spec.alpha :as spec]
             [clojure.spec.gen.alpha :as gen]
-            [com.example.csv-service.data :as data]))
+            [com.example.csv-service.data :as data]
+            [com.example.csv-service.data.spec :as data.spec]))
 
 ;; Test needed?
 (deftest test-parse-date
@@ -42,43 +43,7 @@
     #inst "2000-02-22T00:00:00" "02/22/2000"
     #inst "3000-03-03T00:00:00" "03/03/3000"))
 
-(deftest test-includes-separators?
-  (are [x y] (= (data/includes-separators? x) y)
-    " "         true
-    ", "        true
-    " | "       true
-    "foo bar"   true
-    "foo, bar"  true
-    "foo | bar" true
-    " foo"      true
-    ""          false
-    "foo"       false
-    "foo,bar"   false
-    "foo|bar"   false))
-
-(deftest test-includes-separators?-binding
-  (are [x y] (binding [data/*separators* ["," "."]]
-               (= (data/includes-separators? x) y))
-    "."         true
-    ","         true
-    "foo,bar"   true
-    "foo.bar"   true
-    "foo"       false
-    ""          false
-    "foo | bar" false))
-
-(deftest test-string-spec
-  (are [x y] (= (spec/valid? ::data/string x) y)
-    "foo"       true
-    ""          true
-    "foo,bar"   true
-    "foo.bar"   true
-    "foo bar"   false
-    "foo, bar"  false
-    "foo | bar" false))
-
-(def header
-  ["LastName" "FirstName" "Gender" "FavoriteColor" "DateOfBirth"])
+(def header data.spec/header)
 
 (deftest test-csv-data-spec
   (are [x y] (= (spec/valid? ::data/csv-data x) y)
@@ -92,5 +57,7 @@
      ["a" "" "Female" "bar" "01/30/2018"]] true
     []                                     false
     [["a" "b" "" "" "01/30/2018"]]         false
+    [header
+     ["a" "b" "c" "" "01/01/2018"]]        false
     [header
      ["a" "b" "" "" "01/32/2018"]]         false))

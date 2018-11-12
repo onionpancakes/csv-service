@@ -1,9 +1,9 @@
 (ns com.example.csv-service.data
   (:refer-clojure :exclude [read])
   (:require [clojure.spec.alpha :as spec]
-            [clojure.spec.gen.alpha :as gen]
-            [clojure.string :refer [split join includes? lower-case]]
-            [clojure.java.io :as io])
+            [clojure.string :refer [split join lower-case]]
+            [clojure.java.io :as io]
+            [com.example.csv-service.data.spec :as data.spec])
   (:import [java.text SimpleDateFormat]
            [java.util TimeZone]))
 
@@ -24,38 +24,17 @@
   (.format date-format d))
 
 (spec/def ::date
-  (let [cf (spec/conformer parse-date unparse-date)]
-    (spec/with-gen (spec/and string? cf)
-      #(gen/fmap unparse-date (spec/gen inst?)))))
-
-(spec/def ::header
-  #{["LastName" "FirstName" "Gender"
-     "FavoriteColor" "DateOfBirth"]})
-
-(def ^:dynamic *separators*
-  #{" | ", ", ", " "})
-
-(defn includes-separators?
-  [s]
-  (->> *separators*
-       (some (partial includes? s))
-       (boolean)))
-
-(spec/def ::string
-  (spec/and string? (complement includes-separators?)))
-
-(spec/def ::gender
-  #{"female" "Female" "male" "Male"})
+  (spec/conformer parse-date unparse-date))
 
 (spec/def ::record
-  (spec/cat :last-name ::string
-            :first-name ::string
-            :gender ::gender
-            :favorite-color ::string
+  (spec/cat :last-name ::data.spec/string
+            :first-name ::data.spec/string
+            :gender ::data.spec/gender
+            :favorite-color ::data.spec/string
             :date-of-birth ::date))
 
 (spec/def ::csv-data
-  (spec/cat :header ::header
+  (spec/cat :header ::data.spec/header
             :data (spec/* (spec/spec ::record))))
 
 (defn read [rdr sep]
