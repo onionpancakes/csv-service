@@ -77,3 +77,20 @@
     "foo, bar"  false
     "foo | bar" false))
 
+(def header
+  ["LastName" "FirstName" "Gender" "FavoriteColor" "DateOfBirth"])
+
+(deftest test-csv-data-spec
+  (are [x y] (= (spec/valid? ::data/csv-data x) y)
+    [header]                            true
+    [header
+     ["" "" "" "" "01/01/2008"]]        true
+    [header
+     ["a" "" "foo" "" "01/01/2008"]]    true
+    [header
+     ["a" "" "foo" "" "01/01/2008"]
+     ["a" "" "foo" "bar" "01/30/2018"]] true
+    []                                  false
+    [["a" "b" "" "" "01/30/2018"]]      false
+    [header
+     ["a" "b" "" "" "01/32/2018"]]      false))
