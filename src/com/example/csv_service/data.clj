@@ -2,7 +2,7 @@
   (:refer-clojure :exclude [read])
   (:require [clojure.spec.alpha :as spec]
             [clojure.spec.gen.alpha :as gen]
-            [clojure.string :refer [split join includes?]]
+            [clojure.string :refer [split join includes? lower-case]]
             [clojure.java.io :as io])
   (:import [java.text SimpleDateFormat]
            [java.util TimeZone]))
@@ -44,10 +44,13 @@
 (spec/def ::string
   (spec/and string? (complement includes-separators?)))
 
+(spec/def ::gender
+  #{"female" "Female" "male" "Male"})
+
 (spec/def ::record
   (spec/cat :last-name ::string
             :first-name ::string
-            :gender ::string
+            :gender ::gender
             :favorite-color ::string
             :date-of-birth ::date))
 
@@ -74,6 +77,12 @@
   (->> (mapcat :data others)
        (update base :data into)))
 
+(def gender-order
+  {"female" 0
+   "Female" 1
+   "male"   2
+   "Male"   3})
+
 (defn -main []
   (.mkdir (io/file "./out"))
   (with-open [r1 (io/reader "data/random_pipes.csv")
@@ -85,7 +94,10 @@
     (let [m (merge-data (read r1 #" \| ")
                         (read r2 #", ")
                         (read r3 #" "))]
-      (->> (partial sort-by (juxt :gender :last-name))
+      (->> (partial sort-by (juxt (comp gender-order
+                                        lower-case
+                                        :gender)
+                                  :last-name))
            (update m :data)
            (write w1 ","))
       (->> (partial sort-by :date-of-birth)
