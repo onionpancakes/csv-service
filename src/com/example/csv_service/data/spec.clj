@@ -16,8 +16,12 @@
        (some (partial includes? s))
        (boolean)))
 
+(defn gen-str-no-sep []
+  (->> (spec/gen string?)
+       (gen/such-that (complement includes-separators?))))
+
 (spec/def ::string
-  (spec/and string? (complement includes-separators?)))
+  (spec/with-gen string? gen-str-no-sep))
 
 ;; Date util
 

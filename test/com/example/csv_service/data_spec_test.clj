@@ -28,7 +28,8 @@
     ""          false
     "foo | bar" false))
 
-(deftest test-string-spec
+;; Needed?
+#_(deftest test-string-spec
   (are [x y] (= (spec/valid? ::data.spec/string x) y)
     "foo"       true
     ""          true
