@@ -1,17 +1,14 @@
 (ns user
   (:require [clojure.repl :refer :all]
             [clojure.tools.namespace.repl :refer [refresh]]
-            [clojure.test :refer [run-all-tests]]
             [clojure.spec.alpha :as spec]
             [clojure.java.io :as io]
             [clojure.spec.gen.alpha :as gen]
             [io.pedestal.http :as http]
             [com.example.csv-service.data :as data]
             [com.example.csv-service.data.spec :as data.spec]
-            [com.example.csv-service.server :as server]))
-
-(defn run-tests []
-  (run-all-tests #"com\.example\.csv-service\..*-test"))
+            [com.example.csv-service.server :as server]
+            [com.example.csv-service.test :refer [run-tests]]))
 
 (defn gen-data []
   (gen/generate (spec/gen ::data.spec/csv-data)))
