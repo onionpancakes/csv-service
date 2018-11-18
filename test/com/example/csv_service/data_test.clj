@@ -76,9 +76,9 @@
 (spec/fdef property-round-trip
   :args (spec/cat :arg0 ::data.spec/csv-data)
   :ret ::data.spec/csv-data
-  :fn (fn [{:keys [args ret]}]
-        (= (-> args :arg0 :data seq)
-           (-> ret :data seq))))
+  :fn (fn [{{arg :arg0} :args, ret :ret}]
+        (= (update arg :data seq)
+           (update ret :data seq))))
 
 (deftest test-property-round-trip
   (->> (stest/check `property-round-trip)
