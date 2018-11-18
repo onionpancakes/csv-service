@@ -1,10 +1,10 @@
 (ns com.example.csv-service.data
-  (:refer-clojure :exclude [read])
-  (:require [clojure.spec.alpha :as spec]
-            [clojure.string :refer [split join lower-case]]
-            [clojure.java.io :as io])
+  (:refer-clojure :exclude [merge])
+  (:require [clojure.spec.alpha :as spec])
   (:import [java.text SimpleDateFormat]
            [java.util TimeZone]))
+
+;; Parse
 
 (def date-format
   (doto (SimpleDateFormat. "MM/dd/yyyy")
@@ -25,75 +25,40 @@
 (spec/def ::date
   (spec/conformer parse-date unparse-date))
 
-(spec/def ::record
+(spec/def ::line
   (spec/cat :last-name string?
             :first-name string?
             :gender string?
             :favorite-color string?
             :date-of-birth ::date))
 
-(spec/def ::csv-data
+(spec/def ::lines
   (spec/cat :header (spec/coll-of string?)
-            :data (spec/* (spec/spec ::record))))
+            :data (spec/* (spec/spec ::line))))
 
-(defn merge-data [base & others]
+;; Merge
+
+(defn merge [base & others]
   (->> (mapcat :data others)
        (update base :data into)))
 
-(defn from-lines [sep lines]
-  (->> (map #(split % sep) lines)
-       (spec/conform ::csv-data)))
+;; Sort fns
 
-(defn to-lines [sep data]
-  (->> (spec/unform ::csv-data data)
-       (map #(join sep %))))
+(def gender-order
+  {"Female" 0 "Male" 1})
 
-;; Solution
+(def sort-gender-lastname-keyfn
+  (juxt (comp gender-order :gender) :last-name))
 
-(defn input-data []
-  (with-open [r1 (io/reader "data/random_pipes.csv")
-              r2 (io/reader "data/random_comma.csv")
-              r3 (io/reader "data/random_space.csv")]
-    (let [d1 (from-lines #" \| " (line-seq r1))
-          d2 (from-lines #", " (line-seq r2))
-          d3 (from-lines #" " (line-seq r3))]
-      (merge-data d1 d2 d3))))
+(defn sort-gender-lastname
+  [data]
+  (sort-by sort-gender-lastname-keyfn data))
 
-(defn write-lines [wtr lines]
-  (doseq [line lines]
-    (doto wtr
-      (.write line)
-      (.newLine))))
+(defn sort-date-of-birth
+  [data]
+  (sort-by :date-of-birth data))
 
-(defn solution-fn1 [data]
-  (let [gord   {"Female" 0 "Male" 1}
-        key-fn (juxt (comp gord :gender) :last-name)]
-    (update data :data (partial sort-by key-fn))))
-
-(defn solution-fn2 [data]
-  (update data :data (partial sort-by :date-of-birth)))
-
-(defn solution-fn3 [data]
-  (update data :data (comp reverse (partial sort-by :last-name))))
-
-(defn output-data [data]
-  (with-open [w1 (io/writer "out/random_gender_last.csv")
-              w2 (io/writer "out/random_dob.csv")
-              w3 (io/writer "out/random_last.csv")]
-    (->> (solution-fn1 data)
-         (to-lines ",")
-         (write-lines w1))
-    (->> (solution-fn2 data)
-         (to-lines ",")
-         (write-lines w2))
-    (->> (solution-fn3 data)
-         (to-lines ",")
-         (write-lines w3))))
-
-(defn solution []
-  (.mkdir (io/file "./out"))
-  (output-data (input-data)))
-
-(defn -main []
-  (solution))
+(defn sort-lastname
+  [data]
+  (reverse (sort-by :last-name data)))
 

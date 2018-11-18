@@ -10,24 +10,22 @@
             [com.example.csv-service.data.spec :as data.spec]
             [com.example.csv-service.server :as server]
             [com.example.csv-service.test :refer [run-tests]]
-            [com.example.csv-service.data-test :as data-test]))
+            [com.example.csv-service.data-test :as data-test]
+            [com.example.csv-service.part1 :as part1]))
+
+(alias 'stc 'clojure.spec.test.check)
 
 (defn gen-data []
   (gen/generate (spec/gen ::data.spec/csv-data)))
 
-(defn gen-random-sample []
-  (with-open [w1 (io/writer "data/random_pipes.csv")
-              w2 (io/writer "data/random_comma.csv")
-              w3 (io/writer "data/random_space.csv")]
-    (->> (gen-data)
-         (data/to-lines " | ")
-         (data/write-lines w1))
-    (->> (gen-data)
-         (data/to-lines ", ")
-         (data/write-lines w2))
-    (->> (gen-data)
-         (data/to-lines " ")
-         (data/write-lines w3))))
+(defn gen-random-sample [dir]
+  (.mkdir (io/file (str "./" dir)))
+  (->> (gen-data)
+       (part1/write " | " (str dir "/random_pipes.csv")))
+  (->> (gen-data)
+       (part1/write ", " (str dir "/random_comma.csv")))
+  (->> (gen-data)
+       (part1/write " " (str dir "/random_space.csv"))))
 
 (defonce server
   (->> {:env          :dev

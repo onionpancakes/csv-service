@@ -1,7 +1,8 @@
 (ns com.example.csv-service.data.spec
   (:require [clojure.spec.alpha :as spec]
             [clojure.spec.gen.alpha :as gen]
-            [clojure.string :refer [includes?]])
+            [clojure.string :refer [includes?]]
+            [com.example.csv-service.data :as d])
   (:import [java.util Date]
            [java.time.temporal ChronoUnit]))
 
@@ -66,9 +67,55 @@
                       ::favorite-color ::date-of-birth]))
 
 (spec/def ::data
-  (spec/coll-of ::record))
+  (spec/nilable (spec/coll-of ::record)))
 
 (spec/def ::csv-data
   (spec/keys :req-un [::header]
              :opt-un [::data]))
+
+;; fdef
+
+(spec/fdef d/merge
+  :args (spec/+ ::csv-data)
+  :ret ::csv-data
+  :fn (fn [{args :args ret :ret}]
+        (= (set (mapcat :data args))
+           (set (:data ret)))))
+
+(defn ascending?
+  [strs]
+  (->> (partition 2 1 strs)
+       (map #(apply compare %))
+       (every? #(<= % 0))))
+
+(defn descending?
+  [strs]
+  (->> (partition 2 1 strs)
+       (map #(apply compare %))
+       (every? #(>= % 0))))
+
+(spec/def :sort-gender-lastname/ret
+  (spec/and
+   (spec/cat
+    :female (spec/* (comp #{"Female"} :gender))
+    :male (spec/* (comp #{"Male"} :gender)))
+   (fn [{:keys [female male]}]
+     (and (->> (map :last-name female)
+               (ascending?))
+          (->> (map :last-name male)
+               (ascending?))))))
+
+(spec/fdef d/sort-gender-lastname
+  :args (spec/cat :data ::data)
+  :ret :sort-gender-lastname/ret)
+
+(spec/fdef d/sort-date-of-birth
+  :args (spec/cat :data ::data)
+  :ret #(->> (map :date-of-birth %)
+             (ascending?)))
+
+(spec/fdef d/sort-lastname
+  :args (spec/cat :data ::data)
+  :ret #(->> (map :last-name %)
+             (descending?)))
 

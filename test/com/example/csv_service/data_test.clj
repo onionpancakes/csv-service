@@ -65,13 +65,17 @@
 
 ;; Property tests
 
+(alias 'stc 'clojure.spec.test.check)
+
 (defn check-passed? [check-results]
   (every? (comp :result :clojure.spec.test.check/ret) check-results))
 
+;; Round trip
+
 (defn property-round-trip
   [data]
-  (->> (spec/unform ::data/csv-data data)
-       (spec/conform ::data/csv-data)))
+  (->> (spec/unform ::data/lines data)
+       (spec/conform ::data/lines)))
 
 (spec/fdef property-round-trip
   :args (spec/cat :arg0 ::data.spec/csv-data)
@@ -80,8 +84,22 @@
         (= (update arg :data seq)
            (update ret :data seq))))
 
-(deftest test-property-round-trip
-  (->> (stest/check `property-round-trip)
-       (check-passed?)
-       (is)))
+;; Test specced fns
+
+(def check-fns
+  [`property-round-trip
+   `data/merge
+   `data/sort-gender-lastname
+   `data/sort-date-of-birth
+   `data/sort-lastname])
+
+(def check-opts
+  {::stc/opts {:num-tests 100}})
+
+(deftest test-specced-fns
+  (-> (stest/check check-fns check-opts)
+      (stest/summarize-results)
+      (as-> x
+        (= (:total x) (:check-passed x)))
+      (is)))
 
