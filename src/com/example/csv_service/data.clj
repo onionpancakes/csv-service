@@ -2,8 +2,7 @@
   (:refer-clojure :exclude [read])
   (:require [clojure.spec.alpha :as spec]
             [clojure.string :refer [split join lower-case]]
-            [clojure.java.io :as io]
-            [com.example.csv-service.data.spec :as data.spec])
+            [clojure.java.io :as io])
   (:import [java.text SimpleDateFormat]
            [java.util TimeZone]))
 
@@ -27,14 +26,14 @@
   (spec/conformer parse-date unparse-date))
 
 (spec/def ::record
-  (spec/cat :last-name ::data.spec/string
-            :first-name ::data.spec/string
-            :gender ::data.spec/gender
-            :favorite-color ::data.spec/string
+  (spec/cat :last-name string?
+            :first-name string?
+            :gender string?
+            :favorite-color string?
             :date-of-birth ::date))
 
 (spec/def ::csv-data
-  (spec/cat :header ::data.spec/header
+  (spec/cat :header (spec/coll-of string?)
             :data (spec/* (spec/spec ::record))))
 
 (defn merge-data [base & others]
