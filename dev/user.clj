@@ -8,9 +8,10 @@
             [io.pedestal.http :as http]
             [com.example.csv-service.data :as data]
             [com.example.csv-service.data.spec :as data.spec]
-            [com.example.csv-service.server :as server]
-            [com.example.csv-service.test :refer [run-tests]]
+            [com.example.csv-service.server :as serv]
+            [com.example.csv-service.test :refer [run-tests run-serv-tests]]
             [com.example.csv-service.data-test :as data-test]
+            [com.example.csv-service.server-test :as serv-test]
             [com.example.csv-service.part1 :as part1]))
 
 (alias 'stc 'clojure.spec.test.check)
@@ -30,16 +31,12 @@
 (defonce server
   (->> {:env          :dev
         ::http/join?  false
-        ::http/routes #(deref #'server/routes)}
-       (merge server/service)
+        ::http/routes #(deref #'serv/routes)}
+       (merge serv/service)
        (http/default-interceptors)
        (http/dev-interceptors)
-       (http/create-server)))
+       (serv/create-server)))
 
 (defn start []
   (http/start server))
 
-(comment
-  (with-open [rdr (io/reader "data/sample_pipes.csv")]
-    (->> (data/read rdr #" \| ")
-         (doall))))

@@ -7,3 +7,6 @@
 (defn run-tests []
   (run-all-tests #"com\.example\.csv-service\..*-test"))
 
+(defn run-serv-tests []
+  (run-all-tests #"com\.example\.csv-service\.server-test"))
+
