@@ -2,6 +2,7 @@
   (:require [clojure.test :refer [deftest is are]]
             [clojure.spec.alpha :as spec]
             [clojure.spec.gen.alpha :as gen]
+            [clojure.spec.test.alpha :as stest]
             [com.example.csv-service.data :as data]
             [com.example.csv-service.data.spec :as data.spec]))
 
@@ -61,3 +62,26 @@
      ["a" "b" "c" "" "01/01/2018"]]        false
     [header
      ["a" "b" "" "" "01/32/2018"]]         false))
+
+;;
+
+(defn check-passed? [check-results]
+  (every? (comp :result :clojure.spec.test.check/ret) check-results))
+
+(defn property-round-trip
+  [data]
+  (->> (spec/unform ::data/csv-data data)
+       (spec/conform ::data/csv-data)))
+
+(spec/fdef property-round-trip
+  :args (spec/cat :arg0 ::data.spec/csv-data)
+  :ret ::data.spec/csv-data
+  :fn (fn [{:keys [args ret]}]
+        (= (-> args :arg0 :data seq)
+           (-> ret :data seq))))
+
+(deftest test-property-round-trip
+  (->> (stest/check `property-round-trip)
+       (check-passed?)
+       (is)))
+

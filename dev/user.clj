@@ -4,11 +4,13 @@
             [clojure.spec.alpha :as spec]
             [clojure.java.io :as io]
             [clojure.spec.gen.alpha :as gen]
+            [clojure.spec.test.alpha :as stest]
             [io.pedestal.http :as http]
             [com.example.csv-service.data :as data]
             [com.example.csv-service.data.spec :as data.spec]
             [com.example.csv-service.server :as server]
-            [com.example.csv-service.test :refer [run-tests]]))
+            [com.example.csv-service.test :refer [run-tests]]
+            [com.example.csv-service.data-test :as data-test]))
 
 (defn gen-data []
   (gen/generate (spec/gen ::data.spec/csv-data)))

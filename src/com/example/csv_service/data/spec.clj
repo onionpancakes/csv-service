@@ -25,15 +25,17 @@
 
 ;; Date util
 
-(defn gen-date* [[date plus]]
+(defn truncate-date [date]
   (-> (.toInstant date)
-      (.plusSeconds plus)
       (.truncatedTo ChronoUnit/DAYS)
       (Date/from)))
 
 (defn gen-date []
-  (->> (gen/tuple (spec/gen inst?) (gen/choose 0 1000000000))
-       (gen/fmap gen-date*)))
+  ;; Stop inst generator from making rediculous invalid dates.
+  ;; e.g. #inst "549521-02-29T23:59:59.999-00:00"
+  (->> (spec/inst-in #inst "0001-01-01" #inst "9999-12-31")
+       (spec/gen)
+       (gen/fmap truncate-date)))
 
 (spec/def ::date
   (spec/with-gen inst? gen-date))
@@ -67,5 +69,6 @@
   (spec/coll-of ::record))
 
 (spec/def ::csv-data
-  (spec/keys :req-un [::header ::data]))
+  (spec/keys :req-un [::header]
+             :opt-un [::data]))
 
