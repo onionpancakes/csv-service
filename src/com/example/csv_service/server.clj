@@ -20,7 +20,6 @@
   value)
 
 (defn value-fn [_ v]
-  (println _ v)
   (json-str v))
 
 ;; Handlers
