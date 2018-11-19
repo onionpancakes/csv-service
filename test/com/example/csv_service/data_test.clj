@@ -44,33 +44,9 @@
     #inst "2000-02-22T00:00:00" "02/22/2000"
     #inst "3000-03-03T00:00:00" "03/03/3000"))
 
-#_(def header data.spec/header)
-
-#_(deftest test-csv-data-spec
-  (are [x y] (= (spec/valid? ::data/csv-data x) y)
-    [header]                               true
-    [header
-     ["" "" "Female" "" "01/01/2008"]]     true
-    [header
-     ["a" "" "Male" "" "01/01/2008"]]      true
-    [header
-     ["a" "" "Male" "" "01/01/2008"]
-     ["a" "" "Female" "bar" "01/30/2018"]] true
-    []                                     false
-    [["a" "b" "" "" "01/30/2018"]]         false
-    [header
-     ["a" "b" "c" "" "01/01/2018"]]        false
-    [header
-     ["a" "b" "" "" "01/32/2018"]]         false))
-
 ;; Property tests
 
 (alias 'stc 'clojure.spec.test.check)
-
-(defn check-passed? [check-results]
-  (every? (comp :result :clojure.spec.test.check/ret) check-results))
-
-;; Round trip
 
 (defn property-round-trip
   [data]
