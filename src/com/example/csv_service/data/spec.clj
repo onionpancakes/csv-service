@@ -83,14 +83,14 @@
            (set (:data ret)))))
 
 (defn ascending?
-  [strs]
-  (->> (partition 2 1 strs)
+  [objs]
+  (->> (partition 2 1 objs)
        (map #(apply compare %))
        (every? #(<= % 0))))
 
 (defn descending?
-  [strs]
-  (->> (partition 2 1 strs)
+  [objs]
+  (->> (partition 2 1 objs)
        (map #(apply compare %))
        (every? #(>= % 0))))
 
