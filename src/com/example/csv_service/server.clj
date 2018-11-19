@@ -54,7 +54,7 @@
   (swap! (::state req) d/merge (::csv-data req))
   (println ::after @(::state req))
   {:status 200
-   :header {"Content-Type" "application/json"}
+   :headers {"Content-Type" "application/json"}
    :body   (->> {:message "Posted input!"}
                 (json/write-str))})
 
