@@ -50,11 +50,11 @@
                 error? (terminate))))})
 
 (def read-error-response
-  {:status 422
-   :header {"Content-Type" "application/json"}
-   :body   (->> {:error   true
-                 :message "Data format error!"}
-                (json/write-str))})
+  {:status  422
+   :headers {"Content-Type" "application/json"}
+   :body    (->> {:error   true
+                  :message "Data format error!"}
+                 (json/write-str))})
 
 (def read-post
   {:name  ::read-post
