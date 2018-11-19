@@ -3,6 +3,7 @@
             [clojure.data.json :as json]
             [clojure.spec.alpha :as spec]
             [clojure.spec.gen.alpha :as gen]
+            [clojure.spec.test.alpha :as stest]
             [io.pedestal.http :as http]
             [clj-http.client :as client]
             [com.example.csv-service.server :as serv]
@@ -129,4 +130,40 @@
            (set (-> r1 :body conform-body :data))
            (set (-> r2 :body conform-body :data))
            (set (-> r3 :body conform-body :data))))))
+
+;; Property tests
+
+(defn property-identity
+  [sep csv-data]
+  (reset! state data-empty)
+  (post sep csv-data)
+  [(-> (get-gender) :body conform-body)
+   (-> (get-dob) :body conform-body)
+   (-> (get-name) :body conform-body)])
+
+(spec/fdef property-identity
+  :args (spec/cat :sep (set (keys supported-seps))
+                  :csv-data ::ds/csv-data)
+  :ret  (spec/coll-of ::ds/csv-data)
+  :fn (fn [{{in :csv-data} :args ret :ret}]
+        (->> (map :data ret)
+             (map set)
+             (apply = (set (:data in))))))
+
+;; Test specced fns
+
+(alias 'stc 'clojure.spec.test.check)
+
+(def check-fns
+  [`property-identity])
+
+(def check-opts
+  {::stc/opts {:num-tests 100}})
+
+(deftest test-specced-fns
+  (-> (stest/check check-fns check-opts)
+      (stest/summarize-results)
+      (as-> x
+        (= (:total x) (:check-passed x)))
+      (is)))
 
