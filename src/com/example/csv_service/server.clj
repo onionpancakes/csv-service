@@ -115,7 +115,7 @@
    ::http/port   8080})
 
 (def initial-state
-  {:headers ["LastName" "FirstName" "Gender" "FavoriteColor" "DateOfBirth"]})
+  {:header ["LastName" "FirstName" "Gender" "FavoriteColor" "DateOfBirth"]})
 
 (defn state-interceptor [state]
   {:name ::state
