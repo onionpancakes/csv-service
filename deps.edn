@@ -2,23 +2,29 @@
          org.clojure/data.csv         {:mvn/version "0.1.4"}
          org.clojure/data.json        {:mvn/version "0.2.6"}
          io.pedestal/pedestal.service {:mvn/version "0.5.4"}
-         io.pedestal/pedestal.jetty   {:mvn/version "0.5.4"}
-         clj-http                     {:mvn/version "3.9.1"}}
+         io.pedestal/pedestal.jetty   {:mvn/version "0.5.4"}}
  :paths ["src"]
 
  :aliases
  {:dev
-  {:extra-deps  {org.clojure/tools.namespace {:mvn/version "0.2.11"}
-                 org.clojure/test.check      {:mvn/version "0.9.0"}}
+  {:extra-deps  {org.clojure/tools.namespace {:mvn/version "0.2.11"}}
    :extra-paths ["dev"]}
 
   :test
-  {:extra-paths ["test"]}
+  {:extra-deps  {org.clojure/test.check {:mvn/version "0.9.0"}
+                 clj-http               {:mvn/version "3.9.1"}}
+   :extra-paths ["test"]}
   
   :run-tests
   {:extra-deps  {com.cognitect/test-runner
                  {:git/url "https://github.com/cognitect-labs/test-runner.git"
                   :sha     "028a6d41ac9ac5d5c405dfc38e4da6b4cc1255d5"}}
    :extra-paths ["test"]
-   :main-opts   ["-m" "cognitect.test-runner"]}}}
+   :main-opts   ["-m" "cognitect.test-runner"]}
+
+  :run-part1
+  {:main-opts ["-m" "com.example.csv-service.part1"]}
+
+  :start-part2
+  {:main-opts ["-m" "com.example.csv-service.server"]}}}
 

@@ -45,5 +45,6 @@
          (write "," "out/sorted_lastname.csv"))))
 
 (defn -main []
-  (solution input-files))
+  (solution input-files)
+  (println "Files parsed into ./out directory."))
 
