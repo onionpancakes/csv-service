@@ -3,6 +3,7 @@
   (:require [clojure.java.io :as io]
             [clojure.string :refer [split join]]
             [clojure.spec.alpha :as spec]
+            [clojure.pprint :refer [print-table]]
             [com.example.csv-service.data :as d]))
 
 (defn read [sep f]
@@ -44,7 +45,37 @@
     (->> (update csv-data :data d/sort-lastname)
          (write "," "out/sorted_lastname.csv"))))
 
+(def screen-keys
+  [:last-name :first-name :gender :favorite-color :date-of-birth])
+
+(defn solution-screen
+  "Prints to terminal instead of writing to files."
+  [files]
+  (let [csv-data (->> files
+                      (map (juxt :sep :filename))
+                      (map (partial apply read))
+                      (apply d/merge))]
+
+    (println "Sorted by gender and lastname (ascending):")
+    (->> (:data csv-data)
+         (d/sort-gender-lastname)
+         (map #(update % :date-of-birth d/unparse-date))
+         (print-table screen-keys))
+
+    (println)
+    (println "Sorted by date of birth (ascending):")
+    (->> (:data csv-data)
+         (d/sort-date-of-birth)
+         (map #(update % :date-of-birth d/unparse-date))
+         (print-table screen-keys))
+
+    (println)
+    (println "Sorted by lastname (descending):")
+    (->> (:data csv-data)
+         (d/sort-lastname)
+         (map #(update % :date-of-birth d/unparse-date))
+         (print-table screen-keys))))
+
 (defn -main []
-  (solution input-files)
-  (println "Files parsed into ./out directory."))
+  (solution-screen input-files))
 

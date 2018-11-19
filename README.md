@@ -6,7 +6,7 @@ Requirements: Clojure CLI [link](https://clojure.org/guides/getting_started#_clo
 
 To run, execute `clj -A:run-part1`.
 
-The program will read the random sample files in `./data` and output the aggregate sorted view into `./out`.
+The program will read the random sample files in `./data` and output the aggregate sorted view to the terminal.
 
 ### Data format
 
