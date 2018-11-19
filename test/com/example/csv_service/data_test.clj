@@ -49,6 +49,7 @@
 (alias 'stc 'clojure.spec.test.check)
 
 (defn property-round-trip
+  "If data is unparsed and then parsed, it should be identical."
   [data]
   (->> (spec/unform ::data/lines data)
        (spec/conform ::data/lines)))

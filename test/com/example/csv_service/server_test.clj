@@ -138,6 +138,7 @@
 ;; TODO: figure out lockless tests?
 
 (defn property-identity
+  "Data POSTed should be the same as the data in the GETs."
   [sep csv-data]
   (locking state
     (reset! state data-empty)
@@ -156,6 +157,8 @@
              (apply = (set (:data in))))))
 
 (defn property-sorted-gender
+  "Data is the gender route should be sorted Female before Male
+  in the gender column."
   [sep init-st to-post]
   (locking state
     (reset! state init-st)
@@ -172,6 +175,7 @@
         :male (spec/* (comp #{"Male"} :gender))))
 
 (defn property-sorted-dob
+  "Data in the date-of-birth should be ascending order."
   [sep init-st to-post]
   (locking state
     (reset! state init-st)
@@ -190,6 +194,7 @@
   :ret ds/ascending?)
 
 (defn property-sorted-name
+  "Data in the last name column should be in descending order."
   [sep init-st to-post]
   (locking state
     (reset! state init-st)

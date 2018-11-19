@@ -18,6 +18,8 @@ To start the server, execute `clj -A:start-part2`.
 
 Post data to `localhost:8080/records` using the same file format as part1. Post data requires the `sep` query parameter to be either `pipe`, `comma`, or `space` corresponding to the delimiter present in the data posted in body.
 
+The data in each respective route is sorted in the same order as part1.
+
 ## Running tests
 
 Run `clj -A:test:run-tests`.
