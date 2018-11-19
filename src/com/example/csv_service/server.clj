@@ -68,9 +68,7 @@
                 (assoc-in ctx [:request ::csv-data] csv-data))))})
 
 (defn post-handler [req]
-  (println :before @(::state req))
   (swap! (::state req) d/merge (::csv-data req))
-  (println ::after @(::state req))
   {:status 200
    :headers {"Content-Type" "application/json"}
    :body   (-> {:message "Posted input!"
