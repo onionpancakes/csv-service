@@ -5,6 +5,7 @@
            [java.util TimeZone]))
 
 ;; Parse
+;; Use spec to parse and unparse lines of tokens.
 
 (def date-format
   (doto (SimpleDateFormat. "MM/dd/yyyy")
@@ -38,7 +39,9 @@
 
 ;; Merge
 
-(defn merge [base & others]
+(defn merge
+  "Merges multiple csv-data into one."
+  [base & others]
   (->> (mapcat :data others)
        (update base :data into)))
 

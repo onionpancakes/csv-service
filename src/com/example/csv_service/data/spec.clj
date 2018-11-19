@@ -83,12 +83,14 @@
            (set (:data ret)))))
 
 (defn ascending?
+  "True if seq of objects is in monotonic ascending order."
   [objs]
   (->> (partition 2 1 objs)
        (map #(apply compare %))
        (every? #(<= % 0))))
 
 (defn descending?
+  "True if seq of objects is in monotonic descending order."
   [objs]
   (->> (partition 2 1 objs)
        (map #(apply compare %))

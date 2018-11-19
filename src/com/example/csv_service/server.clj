@@ -33,6 +33,8 @@
    "space" #" "})
 
 (def sep-error-response
+  "Error response when sep query parameter is missing
+  or invalid value."
   {:status  422
    :headers {"Content-Type" "application/json"}
    :body    (->> (str "Must include request parameter \"sep\" "
@@ -41,6 +43,7 @@
                  (json/write-str))})
 
 (def ensure-sep
+  "Interceptor to ensure valid sep query parameter."
   {:name  ::ensure-sep
    :enter (fn [{{{sep :sep} :params} :request :as ctx}]
             (let [error? (not (supported-seps sep))]
@@ -49,6 +52,7 @@
                 error? (terminate))))})
 
 (def read-error-response
+  "Response for bad post data."
   {:status  422
    :headers {"Content-Type" "application/json"}
    :body    (->> {:error   true
@@ -56,6 +60,8 @@
                  (json/write-str))})
 
 (def read-post
+  "Interceptor for reading post body. Conforms the body
+  and puts it into the request map."
   {:name  ::read-post
    :enter (fn [{{{sep :sep} :params
                  body       :body} :request :as ctx}]
@@ -66,13 +72,15 @@
                     (terminate))
                 (assoc-in ctx [:request ::csv-data] csv-data))))})
 
-(defn post-handler [req]
+(defn post-handler
+  "Handler for post data. Merges data into the state atom."
+  [req]
   (swap! (::state req) d/merge (::csv-data req))
-  {:status 200
+  {:status  200
    :headers {"Content-Type" "application/json"}
-   :body   (-> {:message "Posted input!"
-                :posted  (::csv-data req)}
-               (json/write-str :value-fn value-fn))})
+   :body    (-> {:message "Posted input!"
+                 :posted  (::csv-data req)}
+                (json/write-str :value-fn value-fn))})
 
 (def post-interceptors
   [ensure-sep read-post post-handler])
