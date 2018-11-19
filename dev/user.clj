@@ -28,14 +28,17 @@
   (->> (gen-data)
        (part1/write " " (str dir "/random_space.csv"))))
 
+(defonce state
+  (atom serv/initial-state))
+
 (defonce server
-  (->> {:env          :dev
-        ::http/join?  false
-        ::http/routes #(deref #'serv/routes)}
-       (merge serv/service)
-       (http/default-interceptors)
-       (http/dev-interceptors)
-       (serv/create-server)))
+  (-> {:env          :dev
+       ::http/join?  false
+       ::http/routes #(deref #'serv/routes)}
+      (as-> x (merge serv/service x))
+      (http/default-interceptors)
+      (http/dev-interceptors)
+      (serv/create-server state)))
 
 (defn start []
   (http/start server))
