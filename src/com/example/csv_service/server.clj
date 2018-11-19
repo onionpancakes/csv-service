@@ -7,6 +7,24 @@
             [com.example.csv-service.part1 :as p1]
             [com.example.csv-service.data :as d]))
 
+;; JSON
+
+(defmulti json-str type)
+
+(defmethod json-str java.util.Date
+  [value]
+  (d/unparse-date value))
+
+(defmethod json-str :default
+  [value]
+  value)
+
+(defn value-fn [_ v]
+  (println _ v)
+  (json-str v))
+
+;; Handlers
+
 (defn hello-world [req]
   {:status 200 :body "Hello World!"})
 
@@ -55,8 +73,9 @@
   (println ::after @(::state req))
   {:status 200
    :headers {"Content-Type" "application/json"}
-   :body   (->> {:message "Posted input!"}
-                (json/write-str))})
+   :body   (-> {:message "Posted input!"
+                :posted  (::csv-data req)}
+               (json/write-str :value-fn value-fn))})
 
 (def post-interceptors
   [ensure-sep read-post post-handler])
@@ -64,7 +83,7 @@
 (defn gender-handler [{state ::state}]
   {:status  200
    :headers {"Content-Type" "application/json"}
-   :body    (json/write-str @state)})
+   :body    (json/write-str @state :value-fn value-fn)})
 
 (defn dob-handler [{state ::state}]
   {:status  200
