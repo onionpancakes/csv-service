@@ -81,19 +81,23 @@
 (defn gender-handler [{state ::state}]
   {:status  200
    :headers {"Content-Type" "application/json"}
-   :body    (json/write-str @state :value-fn value-fn)})
+   :body    (-> @state
+                (update :data d/sort-gender-lastname)
+                (json/write-str :value-fn value-fn))})
 
 (defn dob-handler [{state ::state}]
   {:status  200
    :headers {"Content-Type" "application/json"}
-   :body    (json/write-str @state)})
+   :body    (-> @state
+                (update :data d/sort-date-of-birth)
+                (json/write-str :value-fn value-fn))})
 
 (defn name-handler [{state ::state}]
   {:status  200
    :headers {"Content-Type" "application/json"}
-   :body    (json/write-str @state)})
-
-;; TODO
+   :body    (-> @state
+                (update :data d/sort-lastname)
+                (json/write-str :value-fn value-fn))})
 
 ;; Server
 
